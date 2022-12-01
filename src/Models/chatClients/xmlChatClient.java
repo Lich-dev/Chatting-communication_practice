@@ -7,7 +7,6 @@ import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
-import javax.xml.validation.SchemaFactory;
 
 import org.xml.sax.*;
 import org.w3c.dom.*;
@@ -18,7 +17,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class xmlChatClient implements ChatClient{
     private String loggedUser;
@@ -88,10 +86,24 @@ public class xmlChatClient implements ChatClient{
     public void login(String username) {
         try {
             DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            dom = db.parse("messages.xml");
-            if (dom == null){
+            File file = new File("messages.xml");
+            if (!file.exists()){
                 dom = db.newDocument();
+                Node rootEl = dom.createElement("messages");
+                dom.appendChild(rootEl);
+                try {
+                    Transformer tr = TransformerFactory.newInstance().newTransformer();
+                    tr.setOutputProperty(OutputKeys.INDENT, "no");//spams whitelines otherwise
+                    tr.setOutputProperty(OutputKeys.METHOD, "xml");
+                    tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+                    tr.transform(new DOMSource(dom),
+                            new StreamResult(new FileOutputStream("messages.xml")));
+
+                } catch (TransformerException | IOException te) {
+                    System.out.println(te.getMessage());
+                }
             }else {
+                dom = db.parse("messages.xml");
                 NodeList msgNodes = dom.getDocumentElement().getChildNodes();
                 for (int i = 0; i < msgNodes.getLength();i++){
                     String[] txtsplit = msgNodes.item(i).getTextContent().split(";");

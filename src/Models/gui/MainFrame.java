@@ -14,7 +14,9 @@ import java.util.Objects;
 public class MainFrame extends JFrame {
     //InMemoryChatClient client = new InMemoryChatClient(this);
     //FileChatClient client = new FileChatClient(this);
-    xmlChatClient client = new xmlChatClient(this);
+    //xmlChatClient client = new xmlChatClient(this);
+    //jsonChatClient client = new jsonChatClient(this);
+    csvChatClient client = new csvChatClient(this);
     JTextArea txtChatArea;
     JTextField msgField;
     JTable userTable;

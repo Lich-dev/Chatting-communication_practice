@@ -11,12 +11,10 @@ public class Main {
         eve.addChatClient(adam.getChatClient());
 
         adam.setLocation(100,200);
-        eve.setLocation(1000,200);
+        eve.setLocation(800,200);
         /*todo
            "merge" with myDB,
            "merge" with liveServer,
-           add HTTP requests GET AND POST (networking),
-           add csv,
-           add json*/
+           add HTTP requests GET AND POST (networking)*/
     }
 }
