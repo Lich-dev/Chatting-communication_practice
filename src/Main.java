@@ -1,7 +1,7 @@
-import Models.chatClients.ChatClient;
-import Models.chatClients.InMemoryChatClient;
+import Models.Servers.*;
 import Models.gui.MainFrame;
 
+import java.io.IOException;
 import java.sql.*;
 
 public class Main {
@@ -30,6 +30,13 @@ public class Main {
             e.printStackTrace();
         }
 
+        new Thread(()->{
+        try {
+            HTTPServer server = new HTTPServer();
+            server.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }}).start();
         /*todo
            "merge" with liveServer,
            add HTTP requests GET AND POST (networking)*/

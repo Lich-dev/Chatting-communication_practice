@@ -17,7 +17,8 @@ public class MainFrame extends JFrame {
     //xmlChatClient client = new xmlChatClient(this);
     //jsonChatClient client = new jsonChatClient(this);
     //csvChatClient client = new csvChatClient(this);
-    DBChatClient client = new DBChatClient(this);
+    //DBChatClient client = new DBChatClient(this);
+    directChatClient client = new directChatClient(this);
     JTextArea txtChatArea;
     JTextField msgField;
     JTable userTable;

@@ -3,27 +3,21 @@ package Models.chatClients;
 import Models.Message;
 import Models.gui.MainFrame;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.w3c.dom.*;
-
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DBChatClient implements ChatClient{
+public class directChatClient implements ChatClient{
     private String loggedUser;
     private List<String> loggedUsers;
     private List<Message> messages;
     private List<ChatClient> otherClients;
     private MainFrame GUI;
+    Socket socket;
 
-    public DBChatClient(MainFrame gui) {
+    public directChatClient(MainFrame gui) {
         GUI = gui;
         loggedUsers = new ArrayList<>();
         messages = new ArrayList<>();
@@ -36,18 +30,12 @@ public class DBChatClient implements ChatClient{
         messages.add(new Message(loggedUser,message, time));
 
         try {
-            Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-            Connection con = DriverManager.getConnection("jdbc:derby:chatDB;create=true");
-            Statement st = con.createStatement();
-            //st.addBatch("drop table peeps");
-            //st.addBatch("create table messages (id int not null generated always as identity constraint messages_PK primary key, name varchar(20),message varchar(50),time varchar(100))");
-            st.addBatch("insert into messages (name,message,time) values ('"+loggedUser+"','"+message+"','"+time+"')");
-            st.executeBatch();
-            /*ResultSet res = st.executeQuery("select * from messages");
-            while(res.next()){
-                System.out.println(res.getString("name")+res.getString("message")+res.getString("time"));
-            }*/
-        } catch (SQLException | ClassNotFoundException e) {
+            socket = new Socket("localhost",5001);
+            PrintWriter out = new PrintWriter(socket.getOutputStream());
+            out.print(loggedUser+";"+message+";"+time);
+            out.flush();
+            out.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -74,23 +62,34 @@ public class DBChatClient implements ChatClient{
     }
     @Override
     public void login(String username) {
+        //new Thread(()->{
         try {
-            Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-            Connection con = DriverManager.getConnection("jdbc:derby:chatDB;create=true");
-            Statement st = con.createStatement();
-            //st.addBatch("drop table peeps");
-            //st.addBatch("create table messages (id int not null generated always as identity constraint messages_PK primary key, name varchar(20),message varchar(50),time varchar(100))");
-            //st.addBatch("insert into messages (name,message,time) values ('"+loggedUser+"','"+message+"','"+time+"')");
-            //st.executeBatch();
-            ResultSet res = st.executeQuery("select * from messages");
-            while(res.next()){
-                Message msg = new Message(res.getString("name"),res.getString("message"),LocalDateTime.parse(res.getString("time")));
+            socket = new Socket("localhost",5001);
+            PrintWriter out = new PrintWriter(socket.getOutputStream());
+            out.print("request");
+            out.flush();
+            socket.shutdownOutput();
+            //System.out.println(socket.isClosed());
+            //while (true){
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream())
+            );
+            do{
+                String str = in.readLine();
+                if (str == null){continue;}
+                String[] txtSplit = str.split(";");
+                Message msg = new Message(txtSplit[0],txtSplit[1], LocalDateTime.parse(txtSplit[2]));
                 messages.add(msg);
                 GUI.sendMessage(msg);
-            }
-        } catch (SQLException | ClassNotFoundException e) {
+            }while (in.ready());
+            in.close();
+            //break;
+            //}
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        //}).start();
 
         loggedUsers.add(new String(username));
         for (ChatClient cc:
